@@ -1,8 +1,8 @@
 import Node from "./node.js";
 
 class LinkedList {
-  head;
-  tail;
+  // _head;
+  // _tail;
 
   append(value) {
     const newNode = new Node(value);
@@ -39,6 +39,10 @@ class LinkedList {
   }
 
   at(index) {
+    if (index < 0 || index >= this.size()) {
+      return;
+    }
+
     let currentNode = this.head;
     for (let i = index; i > 0; i--) {
       currentNode = currentNode.nextNode;
@@ -47,7 +51,16 @@ class LinkedList {
   }
 
   pop() {
+    if (this.size() === 0) {
+      return;
+    }
+
     const currentHead = this.head;
+    if (this.size() === 1) {
+      this.head = null;
+      return currentHead;
+    }
+
     const newHead = currentHead.nextNode;
     this.head = newHead;
     return currentHead;
@@ -72,6 +85,8 @@ class LinkedList {
       if (currentNode.value === value) {
         return i;
       }
+
+      currentNode = currentNode.nextNode;
     }
     return -1;
   }
@@ -122,12 +137,17 @@ class LinkedList {
 
     if (index === 0) {
       this.pop();
+      return;
     }
 
     const nodeBefore = this.at(index - 1);
     const nodeAfter = nodeBefore.nextNode.nextNode;
     nodeBefore.nextNode = nodeAfter;
+    if (index === this.size() - 1) {
+      this.tail = nodeBefore;
+    }
   }
 }
 
 export default LinkedList;
+
