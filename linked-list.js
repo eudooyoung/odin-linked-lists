@@ -1,153 +1,190 @@
 import Node from "./node.js";
 
 class LinkedList {
-  // _head;
-  // _tail;
+  #head = null;
+  #tail = null;
+  #size = 0;
+
+  #headNode() {
+    return this.#head;
+  }
+
+  #tailNode() {
+    return this.#tail;
+  }
 
   append(value) {
     const newNode = new Node(value);
-    if (this.size() === 0) {
-      this.head = this.tail = newNode;
+
+    if (this.#size === 0) {
+      this.#head = this.#tail = newNode;
     } else {
-      this.tail.nextNode = newNode;
-      this.tail = newNode;
+      this.#tail.setNextNode(newNode);
+      this.#tail = newNode;
     }
+
+    this.#size++;
   }
 
   prepend(value) {
     const newNode = new Node(value);
-    if (this.size() === 0) {
-      this.head = this.tail = newNode;
+
+    if (this.#size === 0) {
+      this.#head = this.#tail = newNode;
     } else {
-      newNode.nextNode = this.head;
-      this.head = newNode;
+      newNode.setNextNode(this.#head);
+      this.#head = newNode;
     }
+
+    this.#size++;
   }
 
   size() {
-    if (!this.head && !this.tail) {
-      return 0;
-    }
+    return this.#size;
+  }
 
-    let currentNode = this.head;
-    let count = 1;
-    while (currentNode.nextNode) {
-      currentNode = currentNode.nextNode;
-      count++;
-    }
-    return count;
+  head() {
+    return this.#head ? this.#head.getValue() : undefined;
+  }
+
+  tail() {
+    return this.#tail ? this.#tail.getValue() : undefined;
   }
 
   at(index) {
-    if (index < 0 || index >= this.size()) {
+    if (index < 0 || index >= this.#size) {
       return;
     }
 
-    let currentNode = this.head;
-    for (let i = index; i > 0; i--) {
-      currentNode = currentNode.nextNode;
+    let currentNode = this.#head;
+    for (let i = 0; i < index; i++) {
+      currentNode = currentNode.getNextNode();
     }
-    return currentNode;
+    return currentNode.getValue();
   }
 
   pop() {
-    if (this.size() === 0) {
+    if (this.#size === 0) {
       return;
     }
 
-    const currentHead = this.head;
-    if (this.size() === 1) {
-      this.head = null;
-      return currentHead;
+    const value = this.#head.getValue();
+    this.#head = this.#head.getNextNode();
+    if (--this.#size === 0) {
+      this.#head = this.#tail = null;
     }
-
-    const newHead = currentHead.nextNode;
-    this.head = newHead;
-    return currentHead;
+    return value;
   }
 
   contains(value) {
-    let currentNode = this.head;
-    for (let i = 0; i < this.size(); i++) {
-      if (currentNode.value === value) {
+    let currentNode = this.#head;
+    while (currentNode) {
+      if (currentNode.getValue() === value) {
         return true;
       }
-      currentNode = currentNode.nextNode;
+      currentNode = currentNode.getNextNode();
     }
-
     return false;
   }
 
   findIndex(value) {
-    let currentNode = this.head;
-    let i = 0;
-    for (; i < this.size(); i++) {
-      if (currentNode.value === value) {
-        return i;
+    let currentNode = this.#head;
+    let index = 0;
+    while (currentNode) {
+      if (currentNode.getValue() === value) {
+        return index;
       }
-
-      currentNode = currentNode.nextNode;
+      currentNode = currentNode.getNextNode();
+      index++;
     }
+
     return -1;
   }
 
   toString() {
     let str = "";
-    if (this.size() === 0) {
+    if (this.#size === 0) {
       return str;
     }
 
-    for (let i = 0; i < this.size(); i++) {
-      str += `( ${this.at(i).value} ) -> `;
+    let currentNode = this.#head;
+    str = `( ${currentNode.getValue()} )`;
+    while (currentNode) {
+      let nextNode = currentNode.getNextNode();
+      const strToConcat = nextNode ? `( ${nextNode.getValue()} )` : nextNode;
+      str = str.concat(" -> ", strToConcat);
+      currentNode = nextNode;
     }
-    str += "null";
     return str;
   }
 
   insertAt(index, ...values) {
-    if (index < 0 || index > this.size()) {
-      throw new RangeError(`index ${index} is out of bound`);
+    if (index < 0 || index > this.#size) {
+      throw new RangeError(`Index ${index} is out of bound`);
     }
 
-    const arr = [...values];
-
-    if (index === 0) {
-      arr.toReversed().forEach((value) => this.prepend(value));
-      return;
-    }
-
-    if (index === this.size()) {
-      arr.forEach((value) => this.append(value));
-      return;
-    }
-
-    const nodeBefore = this.at(index - 1);
-    const nodeAfter = nodeBefore.nextNode;
     const subList = new LinkedList();
-    arr.forEach((value) => subList.append(value));
+    [...values].forEach((value) => subList.append(value));
 
-    nodeBefore.nextNode = subList.head;
-    subList.tail.nextNode = nodeAfter;
+    switch (index) {
+      case 0:
+        subList.#tailNode().setNextNode(this.#head);
+        this.#head = subList.#headNode();
+        break;
+
+      case this.#size:
+        this.#tail.setNextNode(subList.#headNode());
+        this.#tail = subList.#tailNode();
+        break;
+
+      default:
+        let currentNode = this.#head;
+        for (let i = index - 1; i > 0; i--) {
+          currentNode = currentNode.getNextNode();
+        }
+        const nextNode = currentNode.getNextNode();
+        currentNode.setNextNode(subList.#headNode());
+        subList.#tailNode().setNextNode(nextNode);
+    }
+
+    this.#size += subList.size();
   }
 
   removeAt(index) {
-    if (index < 0 || index >= this.size()) {
-      throw new RangeError(`index ${index} is out of bound`);
+    if (index < 0 || index >= this.#size) {
+      throw new RangeError(`Index ${index} is out of bound`);
     }
 
-    if (index === 0) {
-      this.pop();
-      return;
+    let currentNode;
+
+    switch (index) {
+      case 0:
+        this.#head = this.#head.getNextNode();
+        if (this.#size === 1) {
+          this.#tail = null;
+        }
+        break;
+
+      case this.#size - 1:
+        currentNode = this.#head;
+        for (let i = index - 1; i > 0; i--) {
+          currentNode = currentNode.getNextNode();
+        }
+        currentNode.setNextNode(null);
+        this.#tail = currentNode;
+        break;
+
+      default:
+        currentNode = this.#head;
+        for (let i = index - 1; i > 0; i--) {
+          currentNode = currentNode.getNextNode();
+        }
+        const nextNode = currentNode.getNextNode().getNextNode();
+        currentNode.setNextNode(nextNode);
     }
 
-    const nodeBefore = this.at(index - 1);
-    const nodeAfter = nodeBefore.nextNode.nextNode;
-    nodeBefore.nextNode = nodeAfter;
-    if (index === this.size() - 1) {
-      this.tail = nodeBefore;
-    }
+    this.#size--;
   }
 }
 
 export default LinkedList;
-
