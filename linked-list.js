@@ -115,18 +115,27 @@ class LinkedList {
       throw new RangeError(`Index ${index} is out of bound`);
     }
 
-    const subList = new LinkedList();
-    [...values].forEach((value) => subList.append(value));
+    let first = null;
+    let last = null;
+    for (let value of values) {
+      const node = new Node(value);
+      if (!first) {
+        first = last = node;
+      } else {
+        last.setNextNode(node);
+        last = node;
+      }
+    }
 
     switch (index) {
       case 0:
-        subList.#tail.setNextNode(this.#head);
-        this.#head = subList.#head;
+        last.setNextNode(this.#head);
+        this.#head = first;
         break;
 
       case this.#size:
-        this.#tail.setNextNode(subList.#head);
-        this.#tail = subList.#tail;
+        this.#tail.setNextNode(first);
+        this.#tail = last;
         break;
 
       default:
@@ -135,11 +144,11 @@ class LinkedList {
           currentNode = currentNode.getNextNode();
         }
         const nextNode = currentNode.getNextNode();
-        currentNode.setNextNode(subList.#head);
-        subList.#tail.setNextNode(nextNode);
+        currentNode.setNextNode(first);
+        last.setNextNode(nextNode);
     }
 
-    this.#size += subList.size();
+    this.#size += values.length;
   }
 
   removeAt(index) {
