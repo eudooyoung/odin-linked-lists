@@ -5,14 +5,6 @@ class LinkedList {
   #tail = null;
   #size = 0;
 
-  #headNode() {
-    return this.#head;
-  }
-
-  #tailNode() {
-    return this.#tail;
-  }
-
   append(value) {
     const newNode = new Node(value);
 
@@ -44,11 +36,11 @@ class LinkedList {
   }
 
   head() {
-    return this.#head ? this.#head.getValue() : undefined;
+    return this.#head?.getValue();
   }
 
   tail() {
-    return this.#tail ? this.#tail.getValue() : undefined;
+    return this.#tail?.getValue();
   }
 
   at(index) {
@@ -128,13 +120,13 @@ class LinkedList {
 
     switch (index) {
       case 0:
-        subList.#tailNode().setNextNode(this.#head);
-        this.#head = subList.#headNode();
+        subList.#tail.setNextNode(this.#head);
+        this.#head = subList.#head;
         break;
 
       case this.#size:
-        this.#tail.setNextNode(subList.#headNode());
-        this.#tail = subList.#tailNode();
+        this.#tail.setNextNode(subList.#head);
+        this.#tail = subList.#tail;
         break;
 
       default:
@@ -143,8 +135,8 @@ class LinkedList {
           currentNode = currentNode.getNextNode();
         }
         const nextNode = currentNode.getNextNode();
-        currentNode.setNextNode(subList.#headNode());
-        subList.#tailNode().setNextNode(nextNode);
+        currentNode.setNextNode(subList.#head);
+        subList.#tail.setNextNode(nextNode);
     }
 
     this.#size += subList.size();
