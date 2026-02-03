@@ -138,7 +138,7 @@ class LinkedList {
         this.#tail = last;
         break;
 
-      default:
+      default: {
         let currentNode = this.#head;
         for (let i = index - 1; i > 0; i--) {
           currentNode = currentNode.getNextNode();
@@ -146,6 +146,7 @@ class LinkedList {
         const nextNode = currentNode.getNextNode();
         currentNode.setNextNode(first);
         last.setNextNode(nextNode);
+      }
     }
 
     this.#size += values.length;
@@ -175,13 +176,14 @@ class LinkedList {
         this.#tail = currentNode;
         break;
 
-      default:
+      default: {
         currentNode = this.#head;
         for (let i = index - 1; i > 0; i--) {
           currentNode = currentNode.getNextNode();
         }
         const nextNode = currentNode.getNextNode().getNextNode();
         currentNode.setNextNode(nextNode);
+      }
     }
 
     this.#size--;
