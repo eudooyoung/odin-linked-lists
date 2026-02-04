@@ -63,6 +63,10 @@ describe("list test", () => {
     expect(list.at(2)).toBe("value2");
     expect(list.at(3)).toBeUndefined();
     expect(list.at(-1)).toBeUndefined();
+
+    const list2 = new LinkedList();
+    // empty list edge case
+    expect(list2.at(1)).toBeUndefined();
   });
 
   it("pop function", () => {
@@ -121,12 +125,14 @@ describe("list test", () => {
     expect(list).toHaveProperty("insertAt");
     expect(typeof list.insertAt).toBe("function");
 
-    let list2 = new LinkedList();
-    let list3 = new LinkedList();
-    for (let i = 0; i < 4; i++) {
+    const list2 = new LinkedList();
+    const list3 = new LinkedList();
+    const list4 = new LinkedList();
+    for (let i = 0; i < 3; i++) {
       list.append(`value${i}`);
       list2.append(`value${i}`);
       list3.append(`value${i}`);
+      list4.append(`value${i}`);
     }
 
     list.insertAt(0, "insert1", "insert2");
@@ -138,5 +144,41 @@ describe("list test", () => {
     expect(list2.toString()).toBe(
       `( value0 ) -> ( insert1 ) -> ( insert2 ) -> ( value1 ) -> ( value2 ) -> null`,
     );
+
+    list3.insertAt(3, "insert1", "insert2");
+    expect(list3.toString()).toBe(
+      `( value0 ) -> ( value1 ) -> ( value2 ) -> ( insert1 ) -> ( insert2 ) -> null`,
+    );
+
+    expect(() => list4.insertAt(-1, "insert1", "insert2")).toThrow(RangeError);
+    expect(() => list4.insertAt(4, "insert1", "insert2")).toThrow(RangeError);
+  });
+
+  it("removeAt function", () => {
+    expect(list).toHaveProperty("removeAt");
+    expect(typeof list.removeAt).toBe("function");
+
+    const list2 = new LinkedList();
+    const list3 = new LinkedList();
+    const list4 = new LinkedList();
+    for (let i = 0; i < 3; i++) {
+      list.append(`value${i}`);
+      list2.append(`value${i}`);
+      list3.append(`value${i}`);
+      list4.append(`value${i}`);
+    }
+
+    list.removeAt(0);
+    expect(list.toString()).toBe(`( value1 ) -> ( value2 ) -> null`);
+
+    list2.removeAt(1);
+    expect(list2.toString()).toBe(`( value0 ) -> ( value2 ) -> null`);
+
+    list3.removeAt(2);
+    expect(list3.toString()).toBe(`( value0 ) -> ( value1 ) -> null`);
+    expect(list3.tail()).toBe("value1");
+
+    expect(() => list4.removeAt(-1)).toThrow(RangeError);
+    expect(() => list4.removeAt(3)).toThrow(RangeError);
   });
 });

@@ -6,27 +6,25 @@ class LinkedList {
   last = null;
 
   append = (value) => {
-    if (this.length === 0) {
-      this.first = this.last = new Node(value);
-      this.length++;
-      return;
-    }
     const node = new Node(value);
-    this.last.nextNode = node;
-    this.last = node;
+    if (this.length === 0) {
+      this.first = this.last = node;
+    } else {
+      this.last.nextNode = node;
+      this.last = node;
+    }
 
     this.length++;
   };
 
   prepend = (value) => {
-    if (this.length === 0) {
-      this.first = this.last = new Node(value);
-      this.length++;
-      return;
-    }
     const node = new Node(value);
-    node.nextNode = this.first;
-    this.first = node;
+    if (this.length === 0) {
+      this.first = this.last = node;
+    } else {
+      node.nextNode = this.first;
+      this.first = node;
+    }
 
     this.length++;
   };
@@ -50,49 +48,50 @@ class LinkedList {
   };
 
   at = (index) => {
+    if (index < 0 || index >= this.size()) {
+      return;
+    }
+
     let current = this.first;
-    while (index > 0 && current.nextNode) {
+    while (index > 0) {
       current = current.nextNode;
       index--;
     }
-    return index !== 0 ? undefined : current.value;
+    return current.value;
   };
 
   pop = () => {
-    const top = this.head();
-    if (!top) {
-      return top;
+    if (this.size() === 0) {
+      return;
     }
+    const top = this.head();
     this.first = this.first.nextNode;
-    this.length--;
+    if (--this.length === 0) {
+      this.first = this.last = null;
+    }
     return top;
   };
 
   contains = (value) => {
-    let front = 0;
-    let back = this.length - 1;
-    while (front <= back) {
-      if (this.at(front) === value || this.at(back) === value) {
+    let current = this.first;
+    while (current) {
+      if (current.value === value) {
         return true;
       }
-      front++;
-      back--;
+      current = current.nextNode;
     }
     return false;
   };
 
   findIndex = (value) => {
-    let front = 0;
-    let back = this.length - 1;
-    while (front <= back) {
-      if (this.at(front) === value) {
-        return front;
+    let current = this.first;
+    let idx = 0;
+    while (current) {
+      if (current.value === value) {
+        return idx;
       }
-      if (this.at(back) === value) {
-        return back;
-      }
-      front++;
-      back--;
+      current = current.nextNode;
+      idx++;
     }
     return -1;
   };
@@ -101,29 +100,97 @@ class LinkedList {
     if (this.length === 0) {
       return "";
     }
-    let str = "";
-    let idx = 0;
-    while (idx < this.length) {
-      str += `( ${this.at(idx)} ) -> `;
-      idx++;
+    let current = this.first;
+    const parts = [];
+    while (current) {
+      const part = `( ${current.value} ) -> `;
+      parts.push(part);
+      current = current.nextNode;
     }
-    str += "null";
+    let str = parts.join("") + "null";
     return str;
   };
 
   insertAt = (index, ...values) => {
-    if (index === 0) {
-      for (let i = values.length - 1; i >= 0; i--) {
-        this.prepend(values[i]);
+    if (index < 0 || index > this.size()) {
+      throw new RangeError(
+        "Index should be at least 0 and at most the size of list",
+      );
+    }
+
+    if (values.length === 0) {
+      return;
+    }
+
+    const subList = new LinkedList();
+    values.forEach(subList.append);
+
+    switch (index) {
+      case 0: {
+        if (this.size() === 0) {
+          this.first = subList.first;
+          this.last = subList.last;
+        } else {
+          const currentFirst = this.first;
+          this.first = subList.first;
+          subList.last.nextNode = currentFirst;
+        }
+        break;
+      }
+      case this.size(): {
+        this.last.nextNode = subList.first;
+        this.last = subList.last;
+        break;
+      }
+      default: {
+        let previous = this.first;
+        for (let i = 0; i < index - 1; i++) {
+          previous = previous.nextNode;
+        }
+        const target = previous.nextNode;
+        previous.nextNode = subList.first;
+        subList.last.nextNode = target;
       }
     }
 
-    let previous = this.first;
-    for (let i = 0; i < index - 1; i++) {
-      previous = previous.nextNode;
+    this.length += subList.size();
+  };
+
+  removeAt = (index) => {
+    if (index < 0 || index >= this.size()) {
+      throw new RangeError(
+        "Index should be at least 0 and smaller than size of list",
+      );
     }
-    const target = previous.nextNode;
-    previous.nextNode = new Node(values[0]);
+
+    switch (index) {
+      case 0: {
+        this.first = this.first.nextNode;
+        break;
+      }
+      case this.size() - 1: {
+        let previous = this.first;
+        for (let i = 0; i < index - 1; i++) {
+          previous = previous.nextNode;
+        }
+        previous.nextNode = null;
+        this.last = previous;
+        break;
+      }
+      default: {
+        let previous = this.first;
+        for (let i = 0; i < index - 1; i++) {
+          previous = previous.nextNode;
+        }
+        const target = previous.nextNode;
+        const next = target.nextNode;
+        previous.nextNode = next;
+      }
+    }
+
+    if (--this.length === 0) {
+      this.first = this.last = null;
+    }
   };
 }
 
